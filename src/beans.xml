@@ -4,6 +4,11 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean id="personService" class="zju.lzq.service.impl.PersonServiceBean"></bean>
+	<bean id="personDao" class="zju.lzq.dao.impl.PersonDaoBean" />
+	<bean id="personService" class="zju.lzq.service.impl.PersonServiceBean">
+		<property name="personDao" ref="personDao"></property>
+	</bean>
+
+
 
 </beans>

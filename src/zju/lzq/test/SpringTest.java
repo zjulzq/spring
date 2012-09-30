@@ -16,9 +16,11 @@ public class SpringTest {
 
 	@Test
 	public void instanceSpring() {
-		ItcastClassPathXMLApplicationContext ctx = new ItcastClassPathXMLApplicationContext("beans.xml");
+		ItcastClassPathXMLApplicationContext ctx = new ItcastClassPathXMLApplicationContext(
+				"beans.xml");
 		PersonService personService = (PersonService) ctx
 				.getBean("personService");
+
 		personService.save();
 	}
 

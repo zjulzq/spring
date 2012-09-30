@@ -1,5 +1,8 @@
 package zju.lzq.test;
 
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +28,41 @@ public class ItcastClassPathXMLApplicationContext {
 	public ItcastClassPathXMLApplicationContext(String fileName) {
 		this.readXML(fileName);
 		this.instanceBeans();
+		this.injectObject();
+	}
+
+	/**
+	 * 为bean对象的属性注入值
+	 */
+	private void injectObject() {
+		for (BeanDefinition beanDefinition : beanDefines) {
+			Object bean = sigletons.get(beanDefinition.getId());
+			if (bean != null) {
+				try {
+					PropertyDescriptor[] ps = Introspector.getBeanInfo(
+							bean.getClass()).getPropertyDescriptors();
+					for (PropertyDefinition propertyDefinition : beanDefinition
+							.getPropertys()) {
+						for (PropertyDescriptor properdesc : ps) {
+							if (propertyDefinition.getName().equals(
+									properdesc.getName())) {
+								Method setter = properdesc.getWriteMethod();// 获取属性的setter方法
+								if (setter != null) {
+									Object value = sigletons
+											.get(propertyDefinition.getRef());
+									setter.setAccessible(true);
+									setter.invoke(bean, value);// 把引用对象注入到属性中
+								}
+								break;
+							}
+						}
+					}
+				} catch (Exception e) {
+
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -73,6 +111,20 @@ public class ItcastClassPathXMLApplicationContext {
 				String id = element.attributeValue("id");// 获取id属性
 				String clazz = element.attributeValue("class");// 获取class属性
 				BeanDefinition beanDefine = new BeanDefinition(id, clazz);
+				XPath propertySub = element.createXPath("ns:property");
+				propertySub.setNamespaceURIs(nsMap);
+				List<Element> propertys = propertySub.selectNodes(element);
+				List<PropertyDefinition> propertyDefinitions = new ArrayList<PropertyDefinition>();
+				for (Element property : propertys) {
+					String propertyName = property.attributeValue("name");
+					String propertyRef = property.attributeValue("ref");
+					System.out.println("name=" + propertyName);
+					System.out.println("ref=" + propertyRef);
+					PropertyDefinition propertyDefinition = new PropertyDefinition(
+							propertyName, propertyRef);
+					propertyDefinitions.add(propertyDefinition);
+				}
+				beanDefine.setPropertys(propertyDefinitions);
 				beanDefines.add(beanDefine);
 			}
 		} catch (Exception e) {
