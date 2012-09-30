@@ -1,0 +1,9 @@
+#.gitignore for assess
+
+#.gitignore
+.classpath
+.project
+.settings/
+src/main/webapp/WEB-INF/classes/
+target/
+
