@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.ConvertUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.XPath;
@@ -48,8 +49,17 @@ public class ItcastClassPathXMLApplicationContext {
 									properdesc.getName())) {
 								Method setter = properdesc.getWriteMethod();// 获取属性的setter方法
 								if (setter != null) {
-									Object value = sigletons
-											.get(propertyDefinition.getRef());
+									Object value = null;
+									if (propertyDefinition.getRef() != null
+											&& propertyDefinition.getRef() != "") {
+										value = sigletons
+												.get(propertyDefinition
+														.getRef());
+									} else {
+										value = ConvertUtils.convert(
+												propertyDefinition.getValue(),
+												properdesc.getPropertyType());
+									}
 									setter.setAccessible(true);
 									setter.invoke(bean, value);// 把引用对象注入到属性中
 								}
@@ -118,10 +128,9 @@ public class ItcastClassPathXMLApplicationContext {
 				for (Element property : propertys) {
 					String propertyName = property.attributeValue("name");
 					String propertyRef = property.attributeValue("ref");
-					System.out.println("name=" + propertyName);
-					System.out.println("ref=" + propertyRef);
+					String propertyValue = property.attributeValue("value");
 					PropertyDefinition propertyDefinition = new PropertyDefinition(
-							propertyName, propertyRef);
+							propertyName, propertyRef, propertyValue);
 					propertyDefinitions.add(propertyDefinition);
 				}
 				beanDefine.setPropertys(propertyDefinitions);
